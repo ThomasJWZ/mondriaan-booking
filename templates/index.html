@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Weekoverzicht — Ruimte Boekingen{% endblock %}
+{% block content %}
+<h2>Week {{ week_start.strftime('%d %b %Y') }} – {{ week_end.strftime('%d %b %Y') }}</h2>
+{% if me %}
+<div class="login-banner" style="margin-bottom: 1em; font-weight: 500;">
+  Ingelogd als:
+  <span style="color: {{ acct_colors.get(me.username, '#333') }};">
+    {{ acct_display.get(me.username, me.username) }}
+  </span>
+</div>
+{% endif %}
+<div class="toolbar">
+  <a class="btn" href="{{ url_for('index', week_start=prev_week) }}">← Vorige week</a>
+  <a class="btn" href="{{ url_for('index') }}">Vandaag</a>
+  <a class="btn" href="{{ url_for('index', week_start=next_week) }}">Volgende week →</a>
+<!-- 🗓️ Date picker -->
+ <form id="jumpForm" action="{{ url_for('index') }}" method="get" style="display:inline-block; margin-left:1em;">
+  <input type="date" id="jumpDate" name="jump_date" value="{{ week_start.strftime('%Y-%m-%d') }}"
+         onchange="this.form.submit();">
+</form>
+
+
+</div>
+
+<div class="legend">
+  {% for uname, disp in acct_display.items() %}
+    <span class="legend-item">
+      <span class="legend-dot" style="background: {{ acct_colors[uname] }};"></span>
+      {{ disp }}
+    </span>
+  {% endfor %}
+</div>
+
+<div class="rooms">
+  {% for room in rooms %}
+  <section class="room-card">
+    <h3>{{ room }}</h3>
+    <div class="week-grid">
+      {% for i in range(7) %}
+        {% set day = week_start + timedelta(days=i) %}
+        <div class="day">
+          <div class="day-head">{{ day.strftime('%a %d %b') }}</div>
+          <ul class="events">
+            {% for b in grid[room][day] %}
+              {% set col = acct_colors.get(b.account, '#333') %}
+              {% set disp_org = acct_display.get(b.account, b.account) %}
+              <li class="event" style="border-left-color: {{ col }};">
+                <div class="event-head">
+                  <span class="event-badge" style="background: {{ col }};"></span>
+                  <div class="time">{{ b.start.strftime('%H:%M') }}–{{ b.end.strftime('%H:%M') }}</div>
+                </div>
+                <div class="title">{{ b.title }}</div>
+                <div class="who">
+                      {% if b.who and b.who.strip() %}
+                         {{ b.who }}
+                        {% else %}
+                         {{ disp_org }}
+                         {% endif %}
+                    </div>
+                {% if authed %}
+                <div class="actions-inline">
+                <a class="link" href="{{ url_for('edit_booking', booking_id=b.id) }}">Boeking bewerken</a>
+                  <form method="post" action="{{ url_for('delete_booking', booking_id=b.id) }}" onsubmit="return confirm('Verwijderen?');">
+                    <button class="link danger" type="submit">Verwijderen</button>
+                  </form>
+                {% endif %}
+              </li>
+            {% else %}
+              <li class="empty">Geen boekingen</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

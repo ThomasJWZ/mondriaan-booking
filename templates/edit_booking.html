@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Boeking bewerken{% endblock %}
+{% block content %}
+<h2>Boeking bewerken</h2>
+
+<form method="post" class="form">
+  <label>Ruimte
+    <select name="room" required>
+      {% for r in rooms %}
+        <option value="{{ r }}" {% if booking.room == r %}selected{% endif %}>{{ r }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label>Titel
+    <input type="text" name="title" value="{{ booking.title }}" required>
+  </label>
+
+  <label>Naam (optioneel)
+    <input type="text" name="who" value="{{ booking.who or '' }}">
+  </label>
+
+  <label>Datum
+    <input type="date" name="date" value="{{ form_date }}" required>
+  </label>
+
+  <label>Starttijd
+    <input type="time" name="start_time" value="{{ form_start }}" required>
+  </label>
+
+  <label>Eindtijd
+    <input type="time" name="end_time" value="{{ form_end }}" required>
+  </label>
+
+  {% if has_series %}
+    <hr>
+    <h4>Herhalingspatroon</h4>
+    <div class="recurring">
+      <label><input type="checkbox" name="repeat_days" value="0" {% if 0 in series_weekdays %}checked{% endif %}> Maandag</label>
+      <label><input type="checkbox" name="repeat_days" value="1" {% if 1 in series_weekdays %}checked{% endif %}> Dinsdag</label>
+      <label><input type="checkbox" name="repeat_days" value="2" {% if 2 in series_weekdays %}checked{% endif %}> Woensdag</label>
+      <label><input type="checkbox" name="repeat_days" value="3" {% if 3 in series_weekdays %}checked{% endif %}> Donderdag</label>
+      <label><input type="checkbox" name="repeat_days" value="4" {% if 4 in series_weekdays %}checked{% endif %}> Vrijdag</label>
+      <label><input type="checkbox" name="repeat_days" value="5" {% if 5 in series_weekdays %}checked{% endif %}> Zaterdag</label>
+      <label><input type="checkbox" name="repeat_days" value="6" {% if 6 in series_weekdays %}checked{% endif %}> Zondag</label>
+    </div>
+
+    <label style="margin-top:8px;">Einddatum van herhaling
+      <input type="date" name="repeat_end" value="{{ series_end }}">
+    </label>
+
+    <div class="actions" style="margin-top:12px;">
+      <button class="btn" type="submit">Opslaan</button>
+      <a class="link" href="{{ url_for('index') }}">Annuleren</a>
+    </div>
+
+    <form method="post" action="{{ url_for('delete_series', series_id=booking.series_id) }}" onsubmit="return confirm('Hele reeks verwijderen? Dit kan niet ongedaan worden gemaakt.');" style="margin-top:12px;">
+      <button class="btn" style="background:#e74c3c;">Verwijder volledige reeks</button>
+    </form>
+  {% else %}
+    <div class="actions" style="margin-top:12px;">
+      <button class="btn" type="submit">Opslaan</button>
+      <a class="link" href="{{ url_for('index') }}">Annuleren</a>
+    </div>
+  {% endif %}
+</form>
+{% endblock %}

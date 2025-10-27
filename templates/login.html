@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Inloggen{% endblock %}
+{% block content %}
+<h2>Inloggen</h2>
+<form method="post" class="form">
+  <label>Gebruikersnaam
+    <input type="text" name="username" placeholder="bijv. mondriaan_maastricht" required>
+  </label>
+  <label>Wachtwoord
+    <input type="password" name="password" placeholder="Wachtwoord" required>
+  </label>
+  <div class="actions">
+    <button class="btn" type="submit">Inloggen</button>
+    <a class="link" href="{{ url_for('index') }}">Annuleren</a>
+  </div>
+</form>
+
+<div class="muted" style="margin-top:8px;">
+  Accounts:
+  <code>mondriaan_maastricht</code>,
+  <code>mondriaan_heerlen</code>,
+  <code>universiteit_maastricht</code>,
+  <code>mumc</code>
+</div>
+{% endblock %}

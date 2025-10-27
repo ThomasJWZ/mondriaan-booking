@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Ruimte Boekingen{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<header class="container">
+  <h1><a href="{{ url_for('index') }}">Mondriaan Maastricht</a></h1>
+  <nav>
+    {% if authed %}
+      <a href="{{ url_for('new_booking') }}" class="btn">Nieuwe boeking</a>
+      <a href="{{ url_for('logout') }}" class="link">Uitloggen</a>
+    {% else %}
+        {% if not hide_login_on_this_page %}
+            <a class="btn" href="{{ url_for('login') }}">Inloggen</a>
+        {% endif %}
+    {% endif %}
+  </nav>
+</header>
+
+<main class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flash">
+      {% for category, message in messages %}
+        <li class="flash-{{ category }}">{{ message }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="container muted">
+  <p>Opmerkingen, vragen? Mail: thomas.vandervelde@maastrichtuniversity.nl</p>
+</footer>
+</body>
+</html>
