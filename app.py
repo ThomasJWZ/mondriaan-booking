@@ -3,6 +3,7 @@ import os
 import uuid
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
+db = SQLAlchemy()   # <-- no app here
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -11,9 +12,15 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# ✅ Secret key (keep safe in env vars on Render)
-app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET', 'dev-secret-change-me')
+# ... your SECRET_KEY + DATABASE_URI config here ...
 
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db.init_app(app)    # <-- attach once here
+
+# create tables once on startup
+with app.app_context():
+    db.create_all()
 # ✅ Database selection logic:
 # 1. Prefer a hosted Postgres if DATABASE_URL is present (Render, etc.)
 # 2. Else use DB_FILE (for SQLite on a mounted volume)
@@ -30,9 +37,6 @@ else:
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{local_db_path}"
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-# Initialize SQLAlchemy
-db = SQLAlchemy(app)
 
 # Make timedelta usable in Jinja templates
 app.jinja_env.globals.update(timedelta=timedelta)
@@ -76,8 +80,6 @@ ACCOUNT_DEFS = [
         "env_pass": "PASS_MUMC",
     },
 ]
-
-db = SQLAlchemy(app)
 
 # ---------- Models ----------
 
