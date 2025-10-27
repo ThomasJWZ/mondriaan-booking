@@ -3,32 +3,29 @@ import os
 import uuid
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
-db = SQLAlchemy()   # <-- no app here
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# Load .env (local development)
+# --- Load .env for local development ---
 load_dotenv()
 
+# --- Create the db object (not attached yet) ---
+db = SQLAlchemy()
+
+# --- Create the Flask app ---
 app = Flask(__name__)
 
-# ... your SECRET_KEY + DATABASE_URI config here ...
+# --- Secret key for sessions ---
+app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET", "dev-secret-change-me")
 
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-db.init_app(app)    # <-- attach once here
-
-# create tables once on startup
-with app.app_context():
-    db.create_all()
-# ✅ Database selection logic:
-# 1. Prefer a hosted Postgres if DATABASE_URL is present (Render, etc.)
-# 2. Else use DB_FILE (for SQLite on a mounted volume)
-# 3. Else fall back to local 'bookings.db'
+# --- Database selection logic ---
 pg_url = os.environ.get("DATABASE_URL")
 db_file = os.environ.get("DB_FILE")
 
 if pg_url:
+    # normalize for SQLAlchemy psycopg driver
+    if pg_url.startswith("postgres://"):
+        pg_url = pg_url.replace("postgres://", "postgresql+psycopg://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = pg_url
 elif db_file:
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_file}"
@@ -36,17 +33,26 @@ else:
     local_db_path = os.path.join(os.path.dirname(__file__), "bookings.db")
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{local_db_path}"
 
+# --- Common config ---
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["DEBUG"] = False
 
-# Make timedelta usable in Jinja templates
+# --- Attach db to app (only once, after URI is set) ---
+db.init_app(app)
+
+# --- Create tables once on startup ---
+with app.app_context():
+    db.create_all()
+
+# --- Make timedelta usable in Jinja ---
 app.jinja_env.globals.update(timedelta=timedelta)
 
-# Define available rooms
+# --- Available rooms ---
 ROOMS = [
     "TMS ruimte",
     "CO2 ruimte",
     "Behandelruimte",
-    "Wetlab"
+    "Wetlab",
 ]
 
 
