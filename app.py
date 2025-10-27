@@ -6,35 +6,43 @@ from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 
+# Load .env (local development)
 load_dotenv()
 
 app = Flask(__name__)
 
-# ✅ Secret key (keep this!)
+# ✅ Secret key (keep safe in env vars on Render)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET', 'dev-secret-change-me')
 
-# ✅ Prefer Railway volume path via env var; fallback to local file
-db_file = os.environ.get('DB_FILE')  # e.g. "/data/bookings.db" on Railway
-if db_file:
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_file}"
+# ✅ Database selection logic:
+# 1. Prefer a hosted Postgres if DATABASE_URL is present (Render, etc.)
+# 2. Else use DB_FILE (for SQLite on a mounted volume)
+# 3. Else fall back to local 'bookings.db'
+pg_url = os.environ.get("DATABASE_URL")
+db_file = os.environ.get("DB_FILE")
+
+if pg_url:
+    app.config["SQLALCHEMY_DATABASE_URI"] = pg_url
+elif db_file:
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_file}"
 else:
-    local_db_path = os.path.join(os.path.dirname(__file__), 'bookings.db')
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{local_db_path}"
+    local_db_path = os.path.join(os.path.dirname(__file__), "bookings.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{local_db_path}"
 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Initialize SQLAlchemy (ensure this appears only once in the file)
+# Initialize SQLAlchemy
 db = SQLAlchemy(app)
 
-# Make timedelta usable in Jinja
+# Make timedelta usable in Jinja templates
 app.jinja_env.globals.update(timedelta=timedelta)
 
-# Rooms
+# Define available rooms
 ROOMS = [
-    'TMS ruimte',
-    'CO2 ruimte',
-    'Behandelruimte',
-    'Wetlab'
+    "TMS ruimte",
+    "CO2 ruimte",
+    "Behandelruimte",
+    "Wetlab"
 ]
 
 
