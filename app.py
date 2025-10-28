@@ -36,9 +36,6 @@ else:
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["DEBUG"] = False
 
-# --- Attach db to app (only once, after URI is set) ---
-db.init_app(app)
-
 # --- Create tables once on startup ---
 with app.app_context():
     db.create_all()
