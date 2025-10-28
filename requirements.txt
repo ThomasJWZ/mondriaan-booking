@@ -7,6 +7,4 @@ itsdangerous==2.1.2
 Werkzeug==3.0.2
 psycopg[binary]==3.2.12
 
-psycopg[binary]==3.2.12
-psycopg2-binary==2.9.9
 

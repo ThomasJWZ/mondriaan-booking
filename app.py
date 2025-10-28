@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, date
-import os
-import uuid
+import os, uuid
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
